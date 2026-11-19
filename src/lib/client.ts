@@ -16,7 +16,7 @@ export const fetcher = async (url: string) => {
   return res.json();
 };
 
-export const useCurrentUser = () => useSWR<User & { isAdmin: boolean }>("/api/me", fetcher, { revalidateOnFocus: false });
+export const useCurrentUser = () => useSWR<User & { isAdmin: boolean; driveEnabled: boolean }>("/api/me", fetcher, { revalidateOnFocus: false });
 
 export async function logout() {
   await fetch("/api/auth/logout", { method: "POST" });

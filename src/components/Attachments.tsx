@@ -104,7 +104,7 @@ export function Attachments({ pageId, files, enabled }: { pageId: string; files:
                 <button
                   aria-label={`Apagar ${f.name}`}
                   onClick={async () => {
-                    if (!confirm(`Apagar "${f.name}"? O ficheiro também é apagado do Google Drive.`)) return;
+                    if (!confirm(`Apagar "${f.name}"? O ficheiro vai para o lixo do Google Drive (recuperável durante 30 dias).`)) return;
                     try {
                       await removeFile(pageId, f.id);
                     } catch (e) {

@@ -99,11 +99,6 @@ export async function streamFile(driveId: string) {
 export async function deleteFile(id: string) {
   const f = getFile(id);
   if (!f) return;
-  try {
-    await getDrive().files.delete({ fileId: f.drive_id, supportsAllDrives: true });
-  } catch (e) {
-    const code = (e as { code?: number }).code;
-    if (code !== 404) throw e;
-  }
+  await getDrive().files.update({ fileId: f.drive_id, requestBody: { trashed: true }, supportsAllDrives: true, fields: "id" });
   sql.prepare("DELETE FROM files WHERE id = ?").run(id);
 }

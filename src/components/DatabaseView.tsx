@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useSyncExternalStore } from "react";
-import { createPage, deletePage, notify, patchPage, uploadFile, usePages, useUsers } from "@/lib/client";
+import { createPage, deletePage, notify, patchPage, uploadFile, useCurrentUser, usePages, useUsers } from "@/lib/client";
 import { DBS, type DateValue, type DbId, type Option, type PageRow, type Prop, type User, type View } from "@/lib/schema";
 import { PropCell, PropValue, StatusTag } from "./PropCell";
 import { Timeline } from "./Timeline";
@@ -29,6 +29,7 @@ export function DatabaseView({
   const def = DBS[db];
   const { data: rows, isLoading } = usePages(db);
   const { data: users = [] } = useUsers();
+  const driveEnabled = useCurrentUser().data?.driveEnabled;
   const storeKey = `yl:view:${db}${embedded ? ":emb" : ""}`;
   const saved = useSyncExternalStore(
     noopSubscribe,
@@ -123,7 +124,7 @@ export function DatabaseView({
               options={(def.props.find((p) => p.key === "projeto") as { options: Option[] }).options.map((o) => ({ value: o.name, label: o.name }))}
             />
           )}
-          {db === "documentos" && <UploadDocsButton defaults={{ ...fixed, ...(filters.projeto ? { projeto: filters.projeto } : {}) }} />}
+          {db === "documentos" && driveEnabled && <UploadDocsButton defaults={{ ...fixed, ...(filters.projeto ? { projeto: filters.projeto } : {}) }} />}
           <NewButton db={db} defaults={{ ...fixed, ...(filters.projeto ? { projeto: filters.projeto } : {}) }} />
         </div>
       </div>
