@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --bg: #fafaf9;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
@@ -31,6 +32,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --bg: #030712;
     --bg-sidebar: #0b1120;
     --bg-card: #111827;

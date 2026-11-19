@@ -20,7 +20,8 @@ export type Prop =
 export type View = {
   id: string;
   name: string;
-  type: "table" | "board";
+  type: "table" | "board" | "timeline";
+  dateProp?: string;
   groupBy?: string;
   sortBy?: string;
   hideDone?: boolean;
@@ -120,6 +121,7 @@ export const DBS: Record<DbId, DbDef> = {
       { id: "quadro", name: "Quadro", type: "board", groupBy: "estado" },
       { id: "por-projeto", name: "Por projeto", type: "table", groupBy: "projeto", sortBy: "prazo" },
       { id: "por-pessoa", name: "Por responsável", type: "board", groupBy: "responsavel", hideDone: true },
+      { id: "linha", name: "Linha do tempo", type: "timeline", dateProp: "prazo", groupBy: "projeto" },
       { id: "todas", name: "Todas", type: "table", sortBy: "prazo" },
     ],
   },
@@ -159,6 +161,7 @@ export const DBS: Record<DbId, DbDef> = {
     views: [
       { id: "quadro", name: "Quadro", type: "board", groupBy: "estado" },
       { id: "tabela", name: "Tabela", type: "table", sortBy: "prioridade" },
+      { id: "linha", name: "Linha do tempo", type: "timeline", dateProp: "datas" },
     ],
   },
   documentos: {

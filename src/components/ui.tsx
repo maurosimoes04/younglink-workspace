@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import {
   AlignLeft,
   ArrowUpRight,
+  ChartGantt,
   Calendar,
   Check,
   ChevronDown,
@@ -210,6 +211,7 @@ const ICONS = {
   url: Link,
   relation: ArrowUpRight,
   smile: Smile,
+  timeline: ChartGantt,
 };
 
 export function Icon({ name, className = "" }: { name: keyof typeof ICONS; className?: string }) {

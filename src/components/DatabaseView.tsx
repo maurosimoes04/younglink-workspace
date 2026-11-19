@@ -6,6 +6,7 @@ import { useState, useSyncExternalStore } from "react";
 import { createPage, patchPage, usePages, useUsers } from "@/lib/client";
 import { DBS, type DateValue, type DbId, type Option, type PageRow, type Prop, type User, type View } from "@/lib/schema";
 import { PropCell, PropValue, StatusTag } from "./PropCell";
+import { Timeline } from "./Timeline";
 import { Avatar, Icon, Tag } from "./ui";
 import { hasPageIcon, PageIcon } from "./icons";
 
@@ -42,7 +43,7 @@ export function DatabaseView({
   const [picked, setPicked] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>({ q: "", person: "", projeto: "" });
 
-  const views = def.views.filter((v) => !(v.groupBy && fixed && v.groupBy in fixed));
+  const views = def.views.filter((v) => v.type === "timeline" || !(v.groupBy && fixed && v.groupBy in fixed));
   const viewId = picked ?? saved;
   const view = views.find((v) => v.id === viewId) ?? views[0];
   const pickView = (id: string) => {
@@ -89,7 +90,7 @@ export function DatabaseView({
               onClick={() => pickView(v.id)}
               className={`flex items-center gap-1.5 rounded px-2 py-1 text-sm whitespace-nowrap ${v.id === view.id ? "text-fg shadow-[inset_0_-2px_0_var(--fg)]" : "text-muted hover:bg-hover"}`}
             >
-              <Icon name={v.type === "board" ? "board" : "table"} className="h-3.5 w-3.5" />
+              <Icon name={v.type === "board" ? "board" : v.type === "timeline" ? "timeline" : "table"} className="h-3.5 w-3.5" />
               {v.name}
             </button>
           ))}
@@ -127,6 +128,8 @@ export function DatabaseView({
 
       {isLoading ? (
         <div className="py-8 text-sm text-faint">A carregar…</div>
+      ) : view.type === "timeline" ? (
+        <Timeline db={db} view={fixed && view.groupBy && view.groupBy in fixed ? { ...view, groupBy: undefined } : view} rows={visible} />
       ) : view.type === "board" ? (
         <Board db={db} view={view} rows={visible} users={users} fixed={fixed} />
       ) : (
