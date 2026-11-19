@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
-import { createPage, patchPage, usePages, useUsers } from "@/lib/client";
+import { useRef, useState, useSyncExternalStore } from "react";
+import { createPage, deletePage, notify, patchPage, uploadFile, usePages, useUsers } from "@/lib/client";
 import { DBS, type DateValue, type DbId, type Option, type PageRow, type Prop, type User, type View } from "@/lib/schema";
 import { PropCell, PropValue, StatusTag } from "./PropCell";
 import { Timeline } from "./Timeline";
@@ -123,6 +123,7 @@ export function DatabaseView({
               options={(def.props.find((p) => p.key === "projeto") as { options: Option[] }).options.map((o) => ({ value: o.name, label: o.name }))}
             />
           )}
+          {db === "documentos" && <UploadDocsButton defaults={{ ...fixed, ...(filters.projeto ? { projeto: filters.projeto } : {}) }} />}
           <NewButton db={db} defaults={{ ...fixed, ...(filters.projeto ? { projeto: filters.projeto } : {}) }} />
         </div>
       </div>
@@ -157,6 +158,53 @@ function FilterSelect({ label, value, onChange, options }: { label: string; valu
         </option>
       ))}
     </select>
+  );
+}
+
+function UploadDocsButton({ defaults }: { defaults: Record<string, unknown> }) {
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(0);
+  const send = async (files: File[]) => {
+    setBusy(files.length);
+    let ok = 0;
+    for (const file of files) {
+      const page = await createPage("documentos", {
+        title: file.name.replace(/\.[^.]+$/, ""),
+        props: { ...defaults, atualizado: { start: new Date().toISOString().slice(0, 10) } },
+      });
+      try {
+        const stored = await uploadFile(page.id, file);
+        await patchPage("documentos", page.id, { props: { ligacao: `${window.location.origin}/api/files/${stored.id}` } });
+        ok++;
+      } catch (e) {
+        await deletePage("documentos", page.id);
+        alert(`${file.name}: ${(e as Error).message}`);
+      }
+      setBusy((n) => n - 1);
+    }
+    if (ok) notify(ok === 1 ? "Documento carregado para o Google Drive" : `${ok} documentos carregados para o Google Drive`);
+  };
+  return (
+    <>
+      <button
+        onClick={() => input.current?.click()}
+        disabled={busy > 0}
+        className="ml-1 flex shrink-0 items-center gap-1 rounded-lg border border-line px-2.5 py-1 text-sm font-medium hover:bg-hover disabled:opacity-60"
+      >
+        {busy > 0 ? `A carregar ${busy}…` : "Carregar"}
+      </button>
+      <input
+        ref={input}
+        type="file"
+        multiple
+        hidden
+        onChange={(e) => {
+          const list = Array.from(e.target.files ?? []);
+          e.target.value = "";
+          if (list.length) send(list);
+        }}
+      />
+    </>
   );
 }
 

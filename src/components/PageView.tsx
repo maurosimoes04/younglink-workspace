@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { deletePage, patchPage, usePage, usePages, type PageWithRefs } from "@/lib/client";
 import { DBS, isDbId, type Prop } from "@/lib/schema";
+import { Attachments } from "./Attachments";
 import { DatabaseView } from "./DatabaseView";
 import { PropCell } from "./PropCell";
 import { Icon, MenuItem, Popover } from "./ui";
@@ -146,6 +147,8 @@ function PageBody({ page }: { page: PageWithRefs }) {
             ))}
           </div>
         )}
+
+        <Attachments pageId={page.id} files={page.files ?? []} enabled={page.driveEnabled} />
 
         {etiqueta && (
           <div className="mt-6 flex flex-col gap-8 border-b border-line pb-8">

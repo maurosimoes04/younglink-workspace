@@ -23,7 +23,48 @@ export async function logout() {
   window.location.assign("/login");
 }
 
-export type PageWithRefs = PageFull & { refs: Pick<PageRow, "id" | "title" | "icon" | "db">[] };
+export type StoredFile = {
+  id: string;
+  page_id: string;
+  name: string;
+  mime: string;
+  size: number;
+  uploaded_by: string | null;
+  uploader_name: string | null;
+  created_at: string;
+};
+
+export type PageWithRefs = PageFull & { refs: Pick<PageRow, "id" | "title" | "icon" | "db">[]; files: StoredFile[]; driveEnabled: boolean };
+
+export function uploadFile(pageId: string, file: File, onProgress?: (fraction: number) => void) {
+  return new Promise<StoredFile>((resolve, reject) => {
+    const form = new FormData();
+    form.append("pageId", pageId);
+    form.append("file", file);
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/files");
+    xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(e.loaded / e.total);
+    xhr.onload = () => {
+      if (xhr.status === 401) toLogin();
+      let data: { error?: string } | null = null;
+      try {
+        data = JSON.parse(xhr.responseText);
+      } catch {}
+      if (xhr.status >= 200 && xhr.status < 300) {
+        mutate(pageKey(pageId));
+        resolve(data as StoredFile);
+      } else reject(new Error(data?.error ?? "Falhou o envio do ficheiro."));
+    };
+    xhr.onerror = () => reject(new Error("Sem ligação ao servidor."));
+    xhr.send(form);
+  });
+}
+
+export async function removeFile(pageId: string, fileId: string) {
+  const res = await fetch(`/api/files/${fileId}`, { method: "DELETE" });
+  if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? "Não foi possível apagar.");
+  await mutate(pageKey(pageId));
+}
 
 const listKey = (db: string) => `/api/pages?db=${db}`;
 const pageKey = (id: string) => `/api/pages/${id}`;
