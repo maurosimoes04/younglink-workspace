@@ -7,6 +7,7 @@ import { createPage, patchPage, usePages, useUsers } from "@/lib/client";
 import { DBS, type DateValue, type DbId, type Option, type PageRow, type Prop, type User, type View } from "@/lib/schema";
 import { PropCell, PropValue, StatusTag } from "./PropCell";
 import { Timeline } from "./Timeline";
+import { Calendar } from "./Calendar";
 import { Avatar, Icon, Tag } from "./ui";
 import { hasPageIcon, PageIcon } from "./icons";
 
@@ -90,7 +91,7 @@ export function DatabaseView({
               onClick={() => pickView(v.id)}
               className={`flex items-center gap-1.5 rounded px-2 py-1 text-sm whitespace-nowrap ${v.id === view.id ? "text-fg shadow-[inset_0_-2px_0_var(--fg)]" : "text-muted hover:bg-hover"}`}
             >
-              <Icon name={v.type === "board" ? "board" : v.type === "timeline" ? "timeline" : "table"} className="h-3.5 w-3.5" />
+              <Icon name={v.type === "board" ? "board" : v.type === "timeline" ? "timeline" : v.type === "calendar" ? "calendar" : "table"} className="h-3.5 w-3.5" />
               {v.name}
             </button>
           ))}
@@ -128,6 +129,8 @@ export function DatabaseView({
 
       {isLoading ? (
         <div className="py-8 text-sm text-faint">A carregar…</div>
+      ) : view.type === "calendar" ? (
+        <Calendar db={db} view={view} rows={visible} fixed={fixed} />
       ) : view.type === "timeline" ? (
         <Timeline db={db} view={fixed && view.groupBy && view.groupBy in fixed ? { ...view, groupBy: undefined } : view} rows={visible} />
       ) : view.type === "board" ? (

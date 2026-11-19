@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { patchPage } from "@/lib/client";
 import { DBS, type DateValue, type DbId, type Option, type PageRow, type View } from "@/lib/schema";
+import { dateOf, dayNum, isoDay, MONTHS, MS_DAY, shiftDate, type Span, spanOf, todayNum } from "@/lib/dates";
 import { hasPageIcon, PageIcon } from "./icons";
 import { StatusTag } from "./PropCell";
 import { Tag } from "./ui";
@@ -16,29 +17,7 @@ const SCALES: { id: Scale; label: string }[] = [
   { id: "mes", label: "Mês" },
   { id: "trimestre", label: "Trimestre" },
 ];
-const MONTHS = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
 const ROW_H = 36;
-const MS_DAY = 86_400_000;
-
-const dayNum = (s: string) => {
-  const [y, m, d] = s.slice(0, 10).split("-").map(Number);
-  return Date.UTC(y, m - 1, d) / MS_DAY;
-};
-const isoDay = (n: number) => new Date(n * MS_DAY).toISOString().slice(0, 10);
-const shiftDate = (s: string, n: number) => isoDay(dayNum(s) + n) + s.slice(10);
-const todayNum = () => {
-  const t = new Date();
-  return Date.UTC(t.getFullYear(), t.getMonth(), t.getDate()) / MS_DAY;
-};
-const dateOf = (n: number) => new Date(n * MS_DAY);
-
-type Span = { start: number; end: number };
-const spanOf = (v: DateValue | undefined): Span | null => {
-  if (!v?.start) return null;
-  const start = dayNum(v.start);
-  const end = v.end ? Math.max(start, dayNum(v.end)) : start;
-  return { start, end };
-};
 
 type Item = { kind: "group"; id: string; label: React.ReactNode; count: number } | { kind: "row"; row: PageRow; span: Span | null };
 type Drag = { id: string; mode: "move" | "start" | "end"; x0: number; delta: number; moved: boolean };

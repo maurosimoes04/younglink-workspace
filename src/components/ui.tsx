@@ -7,6 +7,7 @@ import {
   ArrowUpRight,
   ChartGantt,
   Calendar,
+  CalendarDays,
   Check,
   ChevronDown,
   ChevronRight,
@@ -212,6 +213,7 @@ const ICONS = {
   relation: ArrowUpRight,
   smile: Smile,
   timeline: ChartGantt,
+  calendar: CalendarDays,
 };
 
 export function Icon({ name, className = "" }: { name: keyof typeof ICONS; className?: string }) {
