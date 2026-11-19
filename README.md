@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Young-Link · Espaço de trabalho
 
-## Getting Started
+Projetos, tarefas e documentos da Young-Link, ao estilo Notion. Next.js + SQLite + editor BlockNote.
 
-First, run the development server:
+## Desenvolvimento
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Importar do Notion
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+O ficheiro exportado fica em `data/notion-seed.json`. Para (re)importar:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run import
+```
 
-## Learn More
+A importação atualiza as páginas com o mesmo ID e não apaga o que foi criado na app.
 
-To learn more about Next.js, take a look at the following resources:
+## Contas e login
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Cada pessoa entra com o seu email e palavra-passe. Os administradores gerem as contas na página **Administração** da app (`/admin`): criar contas, editar nome e email, gerar palavras-passe, dar acesso de admin, terminar sessões e apagar contas.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Ao criar uma conta, a pessoa recebe por email um **convite** com um link pessoal (válido 7 dias, uso único) para escolher a palavra-passe. Se o email não estiver configurado, o painel mostra o link para copiar e enviar.
 
-## Deploy on Vercel
+### Configurar o envio de emails
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Usa a mesma conta SMTP da app Young-Link. Cria o ficheiro `.env.local` nesta pasta com:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=notificacoes@younglink.net
+EMAIL_PASS=palavra-passe-de-aplicação
+EMAIL_FROM=notificacoes@younglink.net
+APP_URL=http://endereço-do-mac-mini:3100
+```
+
+`APP_URL` é o endereço que aparece nos links dos convites. Tem de ser um endereço a que as pessoas consigam chegar. Depois de alterar o ficheiro, reinicia a app.
+
+O primeiro administrador nomeia-se no terminal:
+
+```bash
+npm run users -- admin maurosimoes@younglink.net
+```
+
+Também é possível gerir tudo no terminal:
+
+```bash
+npm run users
+```
+
+```bash
+npm run users -- password maurosimoes@younglink.net
+```
+
+```bash
+npm run users -- add nome@younglink.net Nome Apelido
+```
+
+```bash
+npm run users -- email "Ana Neto" ananeto@younglink.net
+```
+
+Depois de entrar, cada pessoa pode mudar a palavra-passe no menu da conta. As sessões duram 30 dias. Ao fim de 8 tentativas falhadas, a conta fica bloqueada durante 15 minutos.
+
+## Correr no Mac Mini
+
+```bash
+npm install
+npm run build
+npm run start -- -p 3100
+```
+
+A base de dados fica em `data/younglink.db` (um só ficheiro: basta copiá-lo para fazer backup). Para a guardar noutro sítio, define `DATA_DIR=/caminho/para/pasta`.

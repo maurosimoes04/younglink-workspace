@@ -1,26 +1,147 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --bg: #fafaf9;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: rgba(28, 25, 23, 0.05);
+  --bg-active: rgba(28, 25, 23, 0.09);
+  --fg: #111827;
+  --fg-muted: #78716c;
+  --fg-faint: #a8a29e;
+  --border: #e7e5e4;
+  --border-strong: #d6d3d1;
+  --accent: #1e3a8a;
+  --accent-fg: #1e3a8a;
+  --accent-soft: #eef2ff;
+  --popover: #ffffff;
+  --shadow: 0 0 0 1px rgba(15, 15, 15, 0.05), 0 3px 6px rgba(15, 15, 15, 0.1), 0 9px 24px rgba(15, 15, 15, 0.2);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --tag-default-bg: rgba(206, 205, 202, 0.5); --tag-default-fg: #37352f;
+  --tag-gray-bg: #e3e2e0; --tag-gray-fg: #32302c;
+  --tag-brown-bg: #eee0da; --tag-brown-fg: #442a1e;
+  --tag-orange-bg: #fadec9; --tag-orange-fg: #49290e;
+  --tag-yellow-bg: #fdecc8; --tag-yellow-fg: #402c1b;
+  --tag-green-bg: #dbeddb; --tag-green-fg: #1c3829;
+  --tag-blue-bg: #d3e5ef; --tag-blue-fg: #183347;
+  --tag-purple-bg: #e8deee; --tag-purple-fg: #412454;
+  --tag-pink-bg: #f5e0e9; --tag-pink-fg: #4c2337;
+  --tag-red-bg: #ffe2dd; --tag-red-fg: #5d1715;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #030712;
+    --bg-sidebar: #0b1120;
+    --bg-card: #111827;
+    --bg-hover: rgba(255, 255, 255, 0.06);
+    --bg-active: rgba(255, 255, 255, 0.11);
+    --fg: #f9fafb;
+    --fg-muted: #9ca3af;
+    --fg-faint: #6b7280;
+    --border: #1f2937;
+    --border-strong: #374151;
+    --accent: #2f4fb0;
+    --accent-fg: #93c5fd;
+    --accent-soft: rgba(59, 130, 246, 0.14);
+    --popover: #1f2937;
+    --shadow: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 3px 6px rgba(0, 0, 0, 0.3), 0 9px 24px rgba(0, 0, 0, 0.5);
+
+    --tag-default-bg: rgba(255, 255, 255, 0.094); --tag-default-fg: rgba(255, 255, 255, 0.86);
+    --tag-gray-bg: #373737; --tag-gray-fg: rgba(255, 255, 255, 0.86);
+    --tag-brown-bg: #4a3328; --tag-brown-fg: rgba(255, 255, 255, 0.86);
+    --tag-orange-bg: #5c3b23; --tag-orange-fg: rgba(255, 255, 255, 0.86);
+    --tag-yellow-bg: #564328; --tag-yellow-fg: rgba(255, 255, 255, 0.86);
+    --tag-green-bg: #243d30; --tag-green-fg: rgba(255, 255, 255, 0.86);
+    --tag-blue-bg: #143a4e; --tag-blue-fg: rgba(255, 255, 255, 0.86);
+    --tag-purple-bg: #3c2d49; --tag-purple-fg: rgba(255, 255, 255, 0.86);
+    --tag-pink-bg: #4e2c3c; --tag-pink-fg: rgba(255, 255, 255, 0.86);
+    --tag-red-bg: #522e2a; --tag-red-fg: rgba(255, 255, 255, 0.86);
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sidebar: var(--bg-sidebar);
+  --color-hover: var(--bg-hover);
+  --color-active: var(--bg-active);
+  --color-fg: var(--fg);
+  --color-muted: var(--fg-muted);
+  --color-faint: var(--fg-faint);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-card: var(--bg-card);
+  --color-popover: var(--popover);
+  --font-sans: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.yl-watermark {
+  -webkit-mask: url("/yl-mark.png") center / contain no-repeat;
+  mask: url("/yl-mark.png") center / contain no-repeat;
+}
+
+.brand-tile {
+  background: linear-gradient(135deg, #1e3a8a, #172054);
+}
+
+.glass {
+  background: color-mix(in srgb, var(--bg-card) 72%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  backdrop-filter: saturate(180%) blur(24px);
+}
+
+.press {
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.press:active {
+  transform: scale(0.97);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.shadow-pop {
+  box-shadow: var(--shadow);
+}
+
+/* BlockNote: integrate with the page instead of looking like a separate card */
+.yl-editor .bn-container,
+.yl-editor .bn-editor {
+  background: transparent;
+  --bn-colors-editor-background: transparent;
+  --bn-colors-editor-text: var(--fg);
+  --bn-font-family: var(--font-sans);
+}
+.yl-editor .bn-editor {
+  padding-inline: 54px;
+}
+@media (max-width: 639px) {
+  .yl-editor .bn-editor {
+    padding-inline: 12px;
+  }
 }
