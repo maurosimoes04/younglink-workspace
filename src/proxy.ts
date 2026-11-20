@@ -6,7 +6,7 @@ export function proxy(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const hasSession = req.cookies.has(SESSION_COOKIE);
 
-  if (pathname === "/login" || pathname === "/recuperar" || pathname.startsWith("/recuperar/") || pathname.startsWith("/convite/")) return NextResponse.next();
+  if (pathname === "/login" || pathname === "/painel" || pathname === "/recuperar" || pathname.startsWith("/recuperar/") || pathname.startsWith("/convite/")) return NextResponse.next();
   if (!hasSession) {
     const url = new URL("/login", req.url);
     if (pathname !== "/") url.searchParams.set("next", pathname + search);

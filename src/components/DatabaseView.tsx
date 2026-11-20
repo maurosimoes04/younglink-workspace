@@ -282,7 +282,7 @@ function tableProps(db: DbId, hide: string[]) {
   return DBS[db].props.filter((p) => !hide.includes(p.key) && !(p.type === "relation") && p.key !== "etiqueta");
 }
 
-const colWidth = (p: Prop) => (p.type === "text" ? 280 : p.type === "date" ? 170 : p.type === "url" ? 200 : 150);
+const colWidth = (p: Prop) => (p.type === "text" ? 280 : p.type === "date" ? 170 : p.type === "url" ? 200 : p.type === "checkbox" ? 100 : 150);
 
 function GroupedTable({ db, view, rows, users, fixed, hideProps }: { db: DbId; view: View; rows: PageRow[]; users: User[]; fixed?: Record<string, unknown>; hideProps: string[] }) {
   const def = DBS[db];

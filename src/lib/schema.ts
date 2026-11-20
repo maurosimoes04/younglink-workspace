@@ -13,7 +13,7 @@ export type Color =
 export type Option = { name: string; color: Color };
 
 export type Prop =
-  | { key: string; name: string; type: "text" | "date" | "person" | "url" }
+  | { key: string; name: string; type: "text" | "date" | "person" | "url" | "checkbox" }
   | { key: string; name: string; type: "select" | "status"; options: Option[] }
   | { key: string; name: string; type: "relation"; inverseOf?: string };
 
@@ -112,6 +112,7 @@ export const DBS: Record<DbId, DbDef> = {
       },
       { key: "responsavel", name: "Responsável", type: "person" },
       { key: "prazo", name: "Prazo", type: "date" },
+      { key: "painel", name: "No painel", type: "checkbox" },
       { key: "projeto", name: "Projeto", type: "select", options: PROJECT_TAGS },
       { key: "notas", name: "Notas", type: "text" },
       { key: "bloqueada_por", name: "Bloqueada por", type: "relation" },
@@ -157,6 +158,7 @@ export const DBS: Record<DbId, DbDef> = {
       },
       { key: "responsavel", name: "Responsável", type: "person" },
       { key: "datas", name: "Datas", type: "date" },
+      { key: "painel", name: "No painel", type: "checkbox" },
       { key: "resumo", name: "Resumo", type: "text" },
       { key: "etiqueta", name: "Etiqueta", type: "select", options: PROJECT_TAGS },
     ],

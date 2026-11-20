@@ -35,6 +35,12 @@ export function PropValue({ page, prop, users, done, relTitles }: { page: PageRo
           {String(v).replace(/^https?:\/\//, "")}
         </a>
       );
+    case "checkbox":
+      return (
+        <span className="inline-flex items-center gap-1 text-accent-fg">
+          <Icon name="check" className="h-3.5 w-3.5" /> {prop.name}
+        </span>
+      );
     case "relation":
       return (
         <span className="flex flex-col gap-0.5">
@@ -86,6 +92,26 @@ export function PropCell({ db, page, prop, done, variant = "cell" }: Props) {
   const isEmpty = page.props[prop.key] == null || (Array.isArray(page.props[prop.key]) && (page.props[prop.key] as unknown[]).length === 0);
 
   const pad = variant === "cell" ? "min-h-[33px] px-2 py-1.5" : variant === "field" ? "min-h-[30px] px-1.5 py-1 rounded" : "";
+
+  if (prop.type === "checkbox") {
+    const on = page.props[prop.key] === true;
+    return (
+      <button
+        role="checkbox"
+        aria-checked={on}
+        aria-label={prop.name}
+        onClick={(e) => {
+          e.stopPropagation();
+          save(on ? null : true);
+        }}
+        className={`flex w-full items-center text-sm ${pad} hover:bg-hover`}
+      >
+        <span className={`flex h-[18px] w-[18px] items-center justify-center rounded-[5px] border-[1.5px] ${on ? "border-accent bg-accent text-white" : "border-line-strong"}`}>
+          {on && <Icon name="check" className="h-3 w-3" />}
+        </span>
+      </button>
+    );
+  }
 
   return (
     <>

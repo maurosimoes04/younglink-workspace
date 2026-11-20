@@ -35,7 +35,7 @@ export function PageView() {
   return <PageBody key={page.id} page={page} />;
 }
 
-const PROP_ICON: Record<Prop["type"], "status" | "select" | "person" | "date" | "text" | "url" | "relation"> = {
+const PROP_ICON: Record<Prop["type"], "status" | "select" | "person" | "date" | "text" | "url" | "relation" | "check"> = {
   status: "status",
   select: "select",
   person: "person",
@@ -43,6 +43,7 @@ const PROP_ICON: Record<Prop["type"], "status" | "select" | "person" | "date" | 
   text: "text",
   url: "url",
   relation: "relation",
+  checkbox: "check",
 };
 
 function PageBody({ page }: { page: PageWithRefs }) {

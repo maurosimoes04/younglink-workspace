@@ -183,6 +183,8 @@ export function AdminUsers() {
         </>
       )}
 
+      <PanelLinks />
+
       {current && <UserSheet key={current.id} user={current} isSelf={current.id === me.id} onClose={() => setEditing(null)} />}
       {creating && <CreateSheet onClose={() => setCreating(false)} />}
     </div>
@@ -546,5 +548,99 @@ function CreateSheet({ onClose }: { onClose: () => void }) {
         </button>
       </form>
     </Sheet>
+  );
+}
+
+type PanelLink = { id: string; name: string; created_at: string; last_seen: string | null; created_by_name: string | null; online: boolean };
+const PANEL_KEY = "/api/admin/painel";
+
+function PanelLinks() {
+  const { data: links = [] } = useSWR<PanelLink[]>(PANEL_KEY, fetcher, { refreshInterval: 60_000 });
+  const [name, setName] = useState("");
+  const [created, setCreated] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const action = useAction();
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-xl font-black tracking-tight">Ecrãs do painel</h2>
+      <p className="mt-1 text-sm text-muted">
+        Cada tablet abre o painel da sede com um link próprio, só de leitura, sem conta. Mostra as tarefas e projetos marcados com «No painel».
+      </p>
+
+      <div className="mt-4 overflow-hidden rounded-2xl border border-line bg-card">
+        {links.length === 0 && <p className="px-4 py-6 text-center text-sm text-faint">Ainda não há nenhum ecrã.</p>}
+        {links.map((l) => {
+          const online = l.online;
+          return (
+            <div key={l.id} className="flex items-center gap-3 border-b border-line px-4 py-3 last:border-0">
+              <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${online ? "bg-[#16a34a]" : "bg-line-strong"}`} title={online ? "Ligado" : "Desligado"} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">{l.name}</span>
+                <span className="block truncate text-xs text-muted">
+                  {online ? "Ligado agora" : l.last_seen ? `Visto ${timeAgo(l.last_seen).toLowerCase()}` : "Nunca abriu o painel"}
+                  {l.created_by_name ? ` · criado por ${l.created_by_name.split(" ")[0]}` : ""}
+                </span>
+              </span>
+              <button
+                onClick={() => {
+                  if (confirm(`Revogar o link de "${l.name}"? Essa tablet deixa de mostrar o painel.`))
+                    action.run(() => call(`${PANEL_KEY}/${l.id}`, "DELETE").then(() => mutate(PANEL_KEY)));
+                }}
+                className="rounded-lg px-2 py-1 text-xs font-semibold text-muted hover:bg-hover hover:text-[#dc2626]"
+              >
+                Revogar
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {created ? (
+        <div className="mt-3 rounded-2xl border border-accent-fg/30 bg-accent-soft p-4">
+          <p className="text-xs font-semibold text-accent-fg">Link criado. Só aparece agora: abre-o na tablet (ou guarda-o na Fully Kiosk).</p>
+          <div className="mt-2 flex items-center gap-2">
+            <code className="min-w-0 flex-1 truncate rounded-lg bg-card px-3 py-2 font-mono text-xs select-all">{created}</code>
+            <button
+              onClick={async () => {
+                await navigator.clipboard.writeText(created).catch(() => {});
+                setCopied(true);
+              }}
+              className={btn}
+            >
+              {copied ? "Copiado" : "Copiar"}
+            </button>
+          </div>
+          <button onClick={() => setCreated(null)} className="mt-2 text-xs text-muted underline">
+            Fechar
+          </button>
+        </div>
+      ) : (
+        <form
+          className="mt-3 flex gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const r = (await action.run(async () => {
+              const res = await fetch(PANEL_KEY, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name }) });
+              const data = await res.json().catch(() => null);
+              if (!res.ok) throw new Error(data?.error ?? "Algo correu mal.");
+              return data as { url: string };
+            })) as { url: string } | undefined;
+            if (r?.url) {
+              setCreated(r.url);
+              setCopied(false);
+              setName("");
+              mutate(PANEL_KEY);
+            }
+          }}
+        >
+          <input className={field} value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome do ecrã (ex.: Tablet da entrada)" aria-label="Nome do ecrã" />
+          <button type="submit" disabled={action.busy} className={`${btnPrimary} shrink-0`}>
+            Criar link
+          </button>
+        </form>
+      )}
+      <Feedback msg={action.msg} />
+    </section>
   );
 }

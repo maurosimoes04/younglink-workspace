@@ -26,7 +26,7 @@ export function BrandTile({ size = 28 }: { size?: number }) {
 
 export function Shell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/login" || pathname === "/recuperar" || pathname.startsWith("/recuperar/") || pathname.startsWith("/convite/")) return <>{children}</>;
+  if (pathname === "/login" || pathname === "/painel" || pathname === "/recuperar" || pathname.startsWith("/recuperar/") || pathname.startsWith("/convite/")) return <>{children}</>;
   return <AppShell>{children}</AppShell>;
 }
 
