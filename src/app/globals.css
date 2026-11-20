@@ -85,6 +85,11 @@ html {
   overscroll-behavior-y: none;
 }
 
+html,
+body {
+  overflow-x: clip;
+}
+
 body {
   background: var(--bg);
   color: var(--fg);

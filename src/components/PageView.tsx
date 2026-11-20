@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { deletePage, patchPage, usePage, usePages, type PageWithRefs } from "@/lib/client";
 import { DBS, isDbId, type Prop } from "@/lib/schema";
 import { Attachments } from "./Attachments";
+import { Comments } from "./Comments";
 import { DatabaseView } from "./DatabaseView";
 import { PropCell } from "./PropCell";
 import { Icon, MenuItem, Popover } from "./ui";
@@ -149,6 +150,7 @@ function PageBody({ page }: { page: PageWithRefs }) {
         )}
 
         <Attachments pageId={page.id} files={page.files ?? []} enabled={page.driveEnabled} />
+        <Comments pageId={page.id} db={db} />
 
         {etiqueta && (
           <div className="mt-6 flex flex-col gap-8 border-b border-line pb-8">

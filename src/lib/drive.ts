@@ -18,6 +18,8 @@ sql.exec(`
   CREATE INDEX IF NOT EXISTS files_page ON files(page_id);
   CREATE TABLE IF NOT EXISTS drive_folders (name TEXT PRIMARY KEY, drive_id TEXT NOT NULL);
 `);
+if (!(sql.prepare("PRAGMA table_info(files)").all() as { name: string }[]).some((c) => c.name === "comment_id"))
+  sql.exec("ALTER TABLE files ADD COLUMN comment_id TEXT");
 
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
@@ -30,6 +32,7 @@ export type StoredFile = {
   uploaded_by: string | null;
   uploader_name: string | null;
   created_at: string;
+  comment_id?: string | null;
 };
 
 const rootFolder = () => process.env.GDRIVE_WORKSPACE_FOLDER_ID?.trim() || "";
@@ -64,7 +67,7 @@ async function folderFor(name: string) {
   return id;
 }
 
-export async function uploadFile(p: { pageId: string; folder: string; name: string; mime: string; buffer: Buffer; userId: string }) {
+export async function uploadFile(p: { pageId: string; commentId?: string | null; folder: string; name: string; mime: string; buffer: Buffer; userId: string }) {
   const parent = await folderFor(p.folder);
   const res = await getDrive().files.create({
     requestBody: { name: p.name, parents: [parent] },
@@ -74,15 +77,21 @@ export async function uploadFile(p: { pageId: string; folder: string; name: stri
   });
   const id = randomUUID();
   sql
-    .prepare("INSERT INTO files (id, page_id, drive_id, name, mime, size, uploaded_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-    .run(id, p.pageId, res.data.id!, p.name, p.mime, p.buffer.length, p.userId, new Date().toISOString());
+    .prepare("INSERT INTO files (id, page_id, comment_id, drive_id, name, mime, size, uploaded_by, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(id, p.pageId, p.commentId ?? null, res.data.id!, p.name, p.mime, p.buffer.length, p.userId, new Date().toISOString());
   return getFile(id)!;
 }
 
-const FILE_COLS = "f.id, f.page_id, f.name, f.mime, f.size, f.uploaded_by, u.name AS uploader_name, f.created_at";
+const FILE_COLS = "f.id, f.page_id, f.comment_id, f.name, f.mime, f.size, f.uploaded_by, u.name AS uploader_name, f.created_at";
 
 export function listFiles(pageId: string): StoredFile[] {
-  return sql.prepare(`SELECT ${FILE_COLS} FROM files f LEFT JOIN users u ON u.id = f.uploaded_by WHERE f.page_id = ? ORDER BY f.created_at`).all(pageId) as StoredFile[];
+  return sql.prepare(`SELECT ${FILE_COLS} FROM files f LEFT JOIN users u ON u.id = f.uploaded_by WHERE f.page_id = ? AND f.comment_id IS NULL ORDER BY f.created_at`).all(pageId) as StoredFile[];
+}
+
+export function listCommentFiles(pageId: string): StoredFile[] {
+  return sql
+    .prepare(`SELECT ${FILE_COLS} FROM files f LEFT JOIN users u ON u.id = f.uploaded_by WHERE f.page_id = ? AND f.comment_id IS NOT NULL ORDER BY f.created_at`)
+    .all(pageId) as StoredFile[];
 }
 
 export function getFile(id: string) {

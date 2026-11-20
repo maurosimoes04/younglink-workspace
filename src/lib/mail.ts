@@ -136,3 +136,33 @@ Se não foste tu que pediste, ignora este email: a tua palavra-passe atual conti
 Associação Young-Link`;
   return { subject, html, text };
 }
+
+export function mentionEmail({ name, author, pageTitle, excerpt, link }: { name: string; author: string; pageTitle: string; excerpt: string; link: string }) {
+  const subject = `${author} mencionou-te em "${pageTitle}"`;
+  const quote = esc(excerpt).replace(/\n/g, "<br>");
+  const html = layout({
+    subject,
+    preheader: `${esc(author)}: ${esc(excerpt.slice(0, 120))}`,
+    eyebrow: "Comentário",
+    title: "Foste mencionado",
+    intro: [
+      `Olá ${esc(name.split(" ")[0])},`,
+      `<strong>${esc(author)}</strong> mencionou-te num comentário em <strong>${esc(pageTitle)}</strong>:`,
+      `<span style="display:block;border-left:3px solid ${BRAND};padding:8px 12px;background:#f5f5f4;border-radius:6px;">${quote}</span>`,
+    ],
+    cta: "Ver comentário",
+    link,
+    notes: [],
+    footnote: "Recebes este email porque alguém te mencionou com @ no espaço de trabalho da Young-Link.",
+  });
+  const text = `Olá ${name.split(" ")[0]},
+
+${author} mencionou-te num comentário em "${pageTitle}":
+
+${excerpt}
+
+Ver comentário: ${link}
+
+Associação Young-Link`;
+  return { subject, html, text };
+}

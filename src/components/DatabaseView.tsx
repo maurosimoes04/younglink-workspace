@@ -1,5 +1,6 @@
 "use client";
 
+import { MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState, useSyncExternalStore } from "react";
@@ -340,6 +341,7 @@ function Table({ db, cols, rows, defaults }: { db: DbId; cols: Prop[]; rows: Pag
               <Link href={`/p/${r.id}`} className="flex items-start gap-1.5 font-medium">
                 {hasPageIcon(r.icon) && <PageIcon name={r.icon} className="mt-0.5 h-4 w-4 text-muted" />}
                 <span className={`underline decoration-transparent underline-offset-2 group-hover:decoration-line-strong ${r.title ? "" : "text-faint"}`}>{r.title || "Sem título"}</span>
+                <CommentCount n={r.comments} className="mt-0.5" />
               </Link>
             </td>
             {cols.map((c) => (
@@ -376,6 +378,7 @@ function MobileList({ db, cols, rows, users, defaults }: { db: DbId; cols: Prop[
               {chips.map((c) =>
                 r.props[c.key] == null ? null : <PropValue key={c.key} page={r} prop={c} users={users} done={done} />,
               )}
+              <CommentCount n={r.comments} />
             </span>
           </Link>
         );
@@ -471,6 +474,7 @@ function Board({ db, view, rows, users, fixed }: { db: DbId; view: View; rows: P
                 {r.title || "Sem título"}
               </span>
               {typeof r.props.resumo === "string" && <span className="line-clamp-2 text-xs text-muted">{r.props.resumo}</span>}
+              {!!r.comments && <CommentCount n={r.comments} />}
               {cardProps.map((p) =>
                 r.props[p.key] == null ? null : (
                   <span key={p.key} className="flex text-xs">
@@ -484,5 +488,15 @@ function Board({ db, view, rows, users, fixed }: { db: DbId; view: View; rows: P
         </div>
       ))}
     </div>
+  );
+}
+
+function CommentCount({ n, className = "" }: { n?: number; className?: string }) {
+  if (!n) return null;
+  return (
+    <span title={n === 1 ? "1 comentário" : `${n} comentários`} className={`inline-flex shrink-0 items-center gap-0.5 text-xs font-normal text-muted ${className}`}>
+      <MessageSquare className="h-3.5 w-3.5" strokeWidth={1.75} />
+      {n}
+    </span>
   );
 }

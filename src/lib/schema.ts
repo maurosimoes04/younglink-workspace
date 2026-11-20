@@ -52,6 +52,7 @@ export type PageRow = {
   props: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+  comments?: number;
 };
 
 export type PageFull = PageRow & { content: unknown[] | null; content_md: string | null };

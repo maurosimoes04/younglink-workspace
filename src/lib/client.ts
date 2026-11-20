@@ -36,10 +36,11 @@ export type StoredFile = {
 
 export type PageWithRefs = PageFull & { refs: Pick<PageRow, "id" | "title" | "icon" | "db">[]; files: StoredFile[]; driveEnabled: boolean };
 
-export function uploadFile(pageId: string, file: File, onProgress?: (fraction: number) => void) {
+export function uploadFile(pageId: string, file: File, onProgress?: (fraction: number) => void, commentId?: string) {
   return new Promise<StoredFile>((resolve, reject) => {
     const form = new FormData();
     form.append("pageId", pageId);
+    if (commentId) form.append("commentId", commentId);
     form.append("file", file);
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/files");
@@ -51,7 +52,7 @@ export function uploadFile(pageId: string, file: File, onProgress?: (fraction: n
         data = JSON.parse(xhr.responseText);
       } catch {}
       if (xhr.status >= 200 && xhr.status < 300) {
-        mutate(pageKey(pageId));
+        mutate(commentId ? commentsKey(pageId) : pageKey(pageId));
         resolve(data as StoredFile);
       } else reject(new Error(data?.error ?? "Falhou o envio do ficheiro."));
     };
@@ -144,4 +145,77 @@ function announceUnblocked(list?: Unblocked[]) {
   for (const u of list) mutate(pageKey(u.id));
   if (list.length === 1) notify(`Desbloqueada: ${list[0].title || "Sem título"}`, `/p/${list[0].id}`);
   else notify(`${list.length} tarefas desbloqueadas`, "/tarefas");
+}
+
+export type ReactionKind = "gosto" | "coracao" | "feito" | "visto" | "celebrar" | "duvida";
+export type Comment = {
+  id: string;
+  parent_id: string | null;
+  author: { id: string; name: string } | null;
+  body: string;
+  created_at: string;
+  edited_at: string | null;
+  resolved_at: string | null;
+  resolved_by_name: string | null;
+  reactions: { kind: ReactionKind; count: number; mine: boolean; names: string[] }[];
+  files: StoredFile[];
+};
+
+const commentsKey = (pageId: string) => `/api/pages/${pageId}/comments`;
+export const useComments = (pageId: string) => useSWR<Comment[]>(commentsKey(pageId), fetcher, { refreshInterval: 15000 });
+
+async function send(url: string, method: string, body?: unknown) {
+  const res = await fetch(url, {
+    method,
+    headers: body ? { "content-type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (res.status === 401) toLogin();
+  const data = res.status === 204 ? null : await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.error ?? "Algo correu mal.");
+  return data;
+}
+
+export async function postComment(pageId: string, db: string, p: { body: string; parentId?: string | null; files: File[] }) {
+  const { id } = (await send(commentsKey(pageId), "POST", { body: p.body, parentId: p.parentId ?? null, withFiles: p.files.length > 0 })) as { id: string };
+  await mutate(commentsKey(pageId));
+  const failed: string[] = [];
+  for (const f of p.files) await uploadFile(pageId, f, undefined, id).catch((e: Error) => failed.push(`${f.name}: ${e.message}`));
+  mutate(listKey(db));
+  if (failed.length) throw new Error(failed.join("\n"));
+}
+
+export async function editComment(pageId: string, id: string, body: string) {
+  await send(`/api/comments/${id}`, "PATCH", { body });
+  await mutate(commentsKey(pageId));
+}
+
+export async function resolveComment(pageId: string, db: string, id: string, resolved: boolean) {
+  await send(`/api/comments/${id}`, "PATCH", { resolved });
+  await mutate(commentsKey(pageId));
+  mutate(listKey(db));
+}
+
+export async function removeComment(pageId: string, db: string, id: string) {
+  await send(`/api/comments/${id}`, "DELETE");
+  await mutate(commentsKey(pageId));
+  mutate(listKey(db));
+}
+
+export async function toggleReaction(pageId: string, id: string, kind: ReactionKind) {
+  mutate<Comment[]>(
+    commentsKey(pageId),
+    (list) =>
+      list?.map((c) => {
+        if (c.id !== id) return c;
+        const has = c.reactions.find((r) => r.kind === kind);
+        const reactions = has
+          ? c.reactions.map((r) => (r.kind === kind ? { ...r, mine: !r.mine, count: r.count + (r.mine ? -1 : 1) } : r)).filter((r) => r.count > 0)
+          : [...c.reactions, { kind, count: 1, mine: true, names: [] }];
+        return { ...c, reactions };
+      }),
+    { revalidate: false },
+  );
+  await send(`/api/comments/${id}/reactions`, "POST", { kind });
+  mutate(commentsKey(pageId));
 }
